@@ -23,7 +23,7 @@ class DDate
 
   ### preprocessors ###
   def handle_define_directives(h={})
-    $OLD_IMMEDIATE_FMT = (!h[:OLD_IMMEDIATE_FMT].nil? && h[:OLD_IMMEDIATE_FMT] == true) ? true : nil
+    $OLD_IMMEDIATE_FMT = (h[:OLD_IMMEDIATE_FMT].nil? || h[:OLD_IMMEDIATE_FMT] == true) ? true : nil
     $US_FORMAT = (!h[:US_FORMAT].nil? && h[:US_FORMAT] == true) ? true : nil
     $KILL_BOB = (h[:KILL_BOB].nil? || h[:KILL_BOB] == 13013) ? 13013 : nil
     $PRAISE_BOB = (!h[:PRAISE_BOB].nil? && h[:PRAISE_BOB] == 13013) ? 13013 : nil
