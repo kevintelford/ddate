@@ -18,6 +18,9 @@ class DDate
 
   end
 
+
+  private
+
   ### preprocessors ###
   def handle_define_directives(h={})
     $OLD_IMMEDIATE_FMT = (!h[:OLD_IMMEDIATE_FMT].nil? && h[:OLD_IMMEDIATE_FMT] == true) ? true : nil
@@ -49,4 +52,41 @@ class DDate
     @DEFAULT_IMMEDIATE_FMT = ($OLD_IMMEDIATE_FMT == true) ? @@OLD_IMMEDIATE_FMT.clone : @@DEFAULT_FMT.clone
   end
 
+  
+  ### functions ###
+
+  ##
+  # Code for counting down to X-Day, X-Day being Cfn 40, 3164
+  #
+  # After `X-Day' passed without incident, the CoSG declared that it had
+  # got the year upside down --- X-Day is actually in 8661 AD rather than
+  # 1998 AD.
+  #
+  # Thus, the True X-Day is Cfn 40, 9827.
+  #
+  ##
+  def xday_countdown(yday, year)
+    return unless $KILL_BOB
+    r = (185 - yday) + (((yday < 59) && (leapp(year))) ? 1 : 0)
+    while year < 9827
+      # TODO : need to test if year var addition is correct
+      year += 1
+      r += (leapp(year) ? 366 : 365)
+    end
+    while year > 9827
+      r-= (leapp(year) ? 366 : 365)
+      year -= 1
+    end
+    return r
+  end
+
+  def leapp(i)
+    ((DY(i) % 4) == 0) && ((DY(i) % 100) > 0 || (DY(i) % 400 ) == 0)
+  end
+
+  def DY(y)
+    (y + 1166)
+  end
+
 end
+
