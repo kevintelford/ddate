@@ -3,6 +3,18 @@ class DDate
   @@DEFAULT_FMT = "%{%A, %B %d%}, %Y YOLD"
   @@OLD_IMMEDIATE_FMT = "Today is %{%A, the %e day of %B%} in the YOLD %Y%N%nCelebrate %H"
 
+  DAY_LONG = ['Sweetmorn', 'Boomtime', 'Pungenday', 'Prickle-Prickle', 'Setting Orange'].freeze
+  DAY_SHORT = ['SM', 'BT', 'PD', 'PP', 'SO'].freeze
+  SEASON_LONG = ['Chaos', 'Discord', 'Confusion', 'Bureaucracy', 'The Aftermath'].freeze
+  SEASON_SHORT = ['Chs', 'Dsc', 'Cfn', 'Bcy', 'Afm'].freeze
+  HOLYDAY = [
+      ['Mungday', 'Chaoflux'],
+      ['Mojoday', 'Discoflux'],
+      ['Syaday', 'Confuflux'],
+      ['Zaraday', 'Bureflux'],
+      ['Maladay', 'Afflux']
+  ].freeze
+
   ##
   # Accepts a hash of preprocessor define directives -- [ OLD_IMMEDIATE_FMT, US_FORMAT, KILL_BOB, PRAISE_BOB ]
   #
@@ -16,6 +28,10 @@ class DDate
     initialize_excl
     initialize_default_immediate_fmt
 
+    argv.unshift('ddate')
+    argc = argv.length
+
+    
   end
 
 
@@ -52,8 +68,132 @@ class DDate
     @DEFAULT_IMMEDIATE_FMT = ($OLD_IMMEDIATE_FMT == true) ? @@OLD_IMMEDIATE_FMT.clone : @@DEFAULT_FMT.clone
   end
 
-  
+
   ### functions ###
+
+  def convert(nday, nyear)
+    funky_chickens = {}
+    funky_chickens[:year] = nyear + 3066
+    funky_chickens[:day] = nday
+    funky_chickens[:season] = 0
+    if (funky_chickens[:year] % 4) == 2
+      if funky_chickens[:day] == 59
+        funky_chickens[:day] == -1
+      elsif funky_chickens[:day] > 59
+        funky_chickens[:day] -= 1
+      end
+    end
+    funky_chickens[:yday] = funky_chickens[:day]
+    while funky_chickens[:day] >= 73
+      funky_chickens[:season] += 1
+      funky_chickens[:day] -= 73
+    end
+    funky_chickens
+  end
+
+  def format(fmt, dt)
+    tib_start = -1
+    tib_end = 0
+    fmtlen = fmt.length
+    bufptr = ''
+
+    # first, find extents of St. Tib's Day area, if defined
+    i = 0
+    while i < fmtlen
+      if fmt[i].eql?('%')
+        case fmt[i + 1]
+          when 'A', 'a', 'd', 'e'
+            if tib_start > 0
+              tib_end = i + 1
+            else
+              tib_start = i
+            end
+          when '{'
+            tib_start = i
+          when '}'
+            tib_end = i + 1
+        end
+      end
+      i += 1
+    end
+
+    # now do the formatting
+    i = 0
+    while i < fmtlen
+
+      if tib_start == i && dt[:day] == -1
+        # handle St. Tib's Day
+        bufptr = "St. Tib's Day"
+        i = tib_end
+
+      else
+        if fmt[i].eql?('%')
+          wibble = nil
+          snarf = nil
+          case fmt[i + 1]
+            when 'A'
+              puts sprintf("dt.yday: %i, mod5: %i\n", dt[:yday], dt[:yday]%5)
+              wibble = DAY_LONG[dt[:yday] % 5]
+            when 'a'
+              wibble = DAY_SHORT[dt[:yday] % 5]
+            when 'B'
+              wibble = SEASON_LONG[dt[:season]]
+            when 'b'
+              wibble = SEASON_SHORT[dt[:season]]
+            when 'd'
+              snarf = sprintf("%d", dt[:day] + 1)
+              wibble = snarf
+            when 'e'
+              snarf = sprintf("%d%s", dt[:day] + 1, ending(dt[:day] + 1))
+              wibble = snarf
+            when 'H'
+              if dt[:day] == 4 || dt[:day] == 49
+                wibble = HOLYDAY[dt[:season]][dt[:day] == 49]
+              end
+            when 'N'
+              return bufptr if dt[:day] != 4 && dt[:day] != 49 # TODO (goto eschaton, zero out memory)
+            when 'n'
+              bufptr += "\n"
+            when 't'
+              bufptr += "\t"
+            when 'Y'
+              snarf = sprintf("%d", dt[:year])
+              wibble = snarf
+            when '.'
+              wibble = sel(@EXCL, @EXCL.length)
+            when 'X'
+              if $KILL_BOB
+                snarf = sprintf("%d", xday_countdown(dt[:yday], dt[:year]))
+                wibble = snarf
+              end
+          end
+
+          if wibble
+            bufptr += wibble
+          else
+            # TODO : 		*(bufptr++) = fmt[i];
+          end
+
+        else
+          bufptr += fmt[i] if !fmt[i-1].eql?('%')
+        end
+
+      end
+
+      i += 1
+    end
+
+    return bufptr
+  end
+
+  def ending(i)
+    (i/10 == 1) ? 'th' : ((i % 10 == 1) ? 'st' : ((i % 10 == 2) ? 'nd' : ((i % 10 == 3) ? 'rd' : 'th')))
+  end
+
+  # select a random string
+  def sel(strings, num)
+    strings[srand()%num]
+  end
 
   ##
   # Code for counting down to X-Day, X-Day being Cfn 40, 3164
