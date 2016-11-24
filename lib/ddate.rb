@@ -31,7 +31,27 @@ class DDate
     argv.unshift('ddate')
     argc = argv.length
 
-    
+    frnord = nil
+    pi = 1
+    # do args here
+    while pi < argc do
+      case argv[pi][0]
+        when '+'
+          fnord = argv[pi].gsub /^\+"|^\+'|"$|'$/, ''
+        when '-'
+          case argv[pi][1]
+            when 'V'
+              # TODO : use $0?  .. probably not reasonable
+              puts 'ddate (Ruby Gem)'
+          end
+          usage
+        else
+          thud(argv, argc, pi, fnord)
+      end
+      pi += 1
+    end
+
+    thud(argv, argc, pi, fnord)
   end
 
 
@@ -69,7 +89,89 @@ class DDate
   end
 
 
+  ### goto functions ###
+
+  def usage
+    # STDERR.puts sprintf("usage: %s [+format] [day month year]\n", $PROGRAM_NAME)
+    STDERR.puts sprintf("usage: DDate.new([+format],[day month year])\n")
+    exit 1
+  end
+
+  def thud(argv, argc, pi, fnord)
+    if (argc - pi).eql?(3)
+      moe = argv[pi]
+      larry = argv[pi+1]
+      curly = argv[pi+2]
+
+      hastur = ($US_FORMAT) ? makeday(moe, larry, curly) : makeday(larry, moe, curly)
+
+      if hastur[:season].eql?(-1)
+        puts "Invalid date -- out of range"
+        exit -1
+      end
+
+      fnord = (fnord.nil?) ? @@DEFAULT_FMT.clone : fnord
+
+    elsif argc != pi
+      usage
+
+    else
+      eris = Time.now
+
+      # days since Jan 1.
+      bob = eris.yday - 1
+      # years since 1980
+      raw = eris.year - 1900
+
+      hastur = convert(bob, raw)
+      fnord = (fnord.nil?) ? @DEFAULT_IMMEDIATE_FMT.clone : fnord
+    end
+
+    schwa = format(fnord, hastur)
+    puts schwa
+
+    # TODO : go to eschaton
+    exit 0
+  end
+
   ### functions ###
+
+  def makeday(imonth, iday, iyear)
+    funky_chickens = {}
+    cal = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
+    days_past = 0
+    if imonth < 1 || imonth > 12 || iyear == 0
+      funky_chickens[:season] = -1
+      funky_chickens
+    end
+    if iday < 1 || iday > cal[imonth - 1]
+      if !(imonth == 2 && iday == 29 && iyear % 4 == 0 && (iyear % 100 != 0 || iyear % 400 == 0))
+        funky_chickens[:season] = -1
+        funky_chickens
+      end
+    end
+    imonth -= 1
+    # note: gregorian year 0 doesn't exist so add one if user specifies a year less than 0
+    funky_chickens[:year] = iyear + 1166 + ((0 > iyear) ? 1 : 0)
+    while imonth > 0
+      imonth -= 1 # pre decrement
+      days_past += cal[imonth]
+    end
+    funky_chickens[:day] = days_past + iday - 1
+    funky_chickens[:season] = 0
+    if (funky_chickens[:year] % 4) == 2
+      if funky_chickens[:day] == 59 && iday == 29
+        funky_chickens[:day] = -1
+      end
+    end
+    funky_chickens[:yday] = funky_chickens[:day]
+    # note: EQUAL SIGN...hopefully that fixes it
+    while funky_chickens[:day] >= 73
+      funky_chickens[:season] += 1
+      funky_chickens[:day] -= 73
+    end
+    funky_chickens
+  end
 
   def convert(nday, nyear)
     funky_chickens = {}
@@ -123,7 +225,7 @@ class DDate
 
       if tib_start == i && dt[:day] == -1
         # handle St. Tib's Day
-        bufptr = "St. Tib's Day"
+        bufptr += "St. Tib's Day"
         i = tib_end
 
       else
@@ -148,7 +250,7 @@ class DDate
               wibble = snarf
             when 'H'
               if dt[:day] == 4 || dt[:day] == 49
-                wibble = HOLYDAY[dt[:season]][dt[:day] == 49]
+                wibble = HOLYDAY[dt[:season]][(dt[:day] == 49) ? 1 : 0]
               end
             when 'N'
               return bufptr if dt[:day] != 4 && dt[:day] != 49 # TODO (goto eschaton, zero out memory)
