@@ -14,7 +14,7 @@ class DDate
       ['Zaraday', 'Bureflux'],
       ['Maladay', 'Afflux']
   ].freeze
-
+  
   ##
   # Accepts a hash of preprocessor define directives -- [ OLD_IMMEDIATE_FMT, US_FORMAT, KILL_BOB, PRAISE_BOB ]
   #
@@ -42,16 +42,25 @@ class DDate
           case argv[pi][1]
             when 'V'
               # TODO : use $0?  .. probably not reasonable
-              puts 'ddate (Ruby Gem)'
+              # puts 'ddate (Ruby Gem)'
+              @buf = 'ddate (Ruby Gem)'
+              return
+            else
+              usage
+              return
           end
-          usage
         else
           thud(argv, argc, pi, fnord)
+          return
       end
       pi += 1
     end
 
     thud(argv, argc, pi, fnord)
+  end
+
+  def to_s
+    @buf
   end
 
 
@@ -93,8 +102,9 @@ class DDate
 
   def usage
     # STDERR.puts sprintf("usage: %s [+format] [day month year]\n", $PROGRAM_NAME)
-    STDERR.puts sprintf("usage: DDate.new([+format],[day month year])\n")
-    exit 1
+    # STDERR.puts sprintf("usage: DDate.new([+format],[day month year])\n")
+    # exit 1
+    @buf = sprintf("usage: DDate.new([+format],[day month year])\n")
   end
 
   def thud(argv, argc, pi, fnord)
@@ -114,6 +124,7 @@ class DDate
 
     elsif argc != pi
       usage
+      return
 
     else
       eris = Time.now
@@ -128,10 +139,12 @@ class DDate
     end
 
     schwa = format(fnord, hastur)
-    puts schwa
+    # puts schwa
+    @buf = schwa
+
 
     # TODO : go to eschaton
-    exit 0
+    # exit 0
   end
 
   ### functions ###
@@ -234,7 +247,6 @@ class DDate
           snarf = nil
           case fmt[i + 1]
             when 'A'
-              puts sprintf("dt.yday: %i, mod5: %i\n", dt[:yday], dt[:yday]%5)
               wibble = DAY_LONG[dt[:yday] % 5]
             when 'a'
               wibble = DAY_SHORT[dt[:yday] % 5]
