@@ -1,3 +1,49 @@
+##
+#   ddate.c .. converts boring normal dates to fun Discordian Date -><-
+#   written  the 65th day of The Aftermath in the Year of Our Lady of
+#   Discord 3157 by Druel the Chaotic aka Jeremy Johnson aka
+#   mpython@gnu.ai.mit.edu
+#   28 Sever St Apt #3
+#   Worcester MA 01609
+#
+#   and I'm not responsible if this program messes anything up (except your
+#   mind, I'm responsible for that)
+#
+#   (k) YOLD 3161 and all time before and after.
+#   Reprint, reuse, and recycle what you wish.
+#   This program is in the public domain.  Distribute freely.  Or not.
+#
+#   Majorly hacked, extended and bogotified/debogotified on
+#   Sweetmorn, Bureaucracy 42, 3161 YOLD, by Lee H:. O:. Smith, KYTP,
+#   aka Andrew Bulhak, aka acb@dev.null.org
+#
+#   Slightly hackled and crackled by a sweet firey stove on
+#   Boomtime, the 53rd day of Bureaucracy in the YOLD 3179,
+#   by Chaplain Nyan the Wiser, aka Dan Dart, aka ntw@dandart.co.uk
+#
+#   and I'm not responsible if this program messes anything up (except your
+#   mind, I'm responsible for that) (and that goes for me as well --lhos)
+#
+#   Version history:
+#   Bureflux 3161:      First release of enhanced ddate with format strings
+#   59 Bcy, 3161:       PRAISE_BOB and KILL_BOB options split, other minor
+#   changes.
+#   53 Bcy, 3179:       Fixed gregorian date conversions less than YOLD 1167
+#
+#   1999-02-22 Arkadiusz Miskiewicz <misiek@pld.ORG.PL>
+#   - added Native Language Support
+#
+#   2000-03-17 Burt Holzman <holzman+ddate@gmail.com>
+#   - added range checks for dates
+#
+#   2014-06-07 William Woodruff <william@tuffbizz.com>
+#   - removed gettext dependent locale code
+#
+#   15th of Confusion, 3180:
+#   - call out adherents of the wrong fruit
+#
+#   FIVE TONS OF FLAX
+##
 class DDate
 
   @@DEFAULT_FMT = "%{%A, %B %d%}, %Y YOLD"
@@ -14,10 +60,30 @@ class DDate
       ['Zaraday', 'Bureflux'],
       ['Maladay', 'Afflux']
   ].freeze
-  
+
+
   ##
-  # Accepts a hash of preprocessor define directives -- [ OLD_IMMEDIATE_FMT, US_FORMAT, KILL_BOB, PRAISE_BOB ]
+  # configuration options  VVVVV   READ THIS!!!
   #
+  # If you wish ddate(1) to print the date in the same format as Druel's
+  # original ddate when called in immediate mode, define OLD_IMMEDIATE_FMT
+  #   #define OLD_IMMEDIATE_FMT (default true)
+  #
+  # If you wish to use the US format for aneristic dates (m-d-y), as opposed to
+  # the Commonwealth format, define US_FORMAT.
+  #   #define US_FORMAT
+  #
+  # If you are ideologically, theologically or otherwise opposed to the
+  # Church of the SubGenius and do not wish your copy of ddate(1) to contain
+  # code for counting down to X-Day, undefine KILL_BOB
+  #   #define KILL_BOB 13013 (default 13013)
+  #
+  # If you wish ddate(1) to contain SubGenius slogans, define PRAISE_BOB
+  #   #define PRAISE_BOB 13013
+  #
+  # (initialize accepts hash of preprocessor define directives as optional first param)
+  #
+  ##
   def initialize(*argv)
 
     if argv[0].is_a?(Hash)
