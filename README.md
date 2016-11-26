@@ -216,5 +216,5 @@ the 59th and 60th days of the Season of Chaos.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+This project is released into the public domain via the Unlicense, which you can find in the file LICENSE.md.
 
