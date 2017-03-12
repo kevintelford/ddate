@@ -206,7 +206,7 @@ class DDate
 
     schwa = format(fnord, hastur)
     # puts schwa
-    @buf = schwa
+    @buf = schwa + "\n"
 
 
     # TODO : go to eschaton
@@ -409,4 +409,3 @@ class DDate
   end
 
 end
-
